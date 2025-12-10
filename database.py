@@ -8,17 +8,12 @@ import zipfile
 import json
 import os
 
-class AssetTypes(str, Enum):
-    PFP = "pfp"
-    STICKER = "sticker"
-    ASSET_BUNDLE = "asset_bundle"
-    WORLD = "world"
-
 class WorldInfo(BaseModel):
     name: str | None = None
     publisher: str | None = None
     bundlepath: str | None = None
     bundledata: str | None = None
+    worldthumbnail: str | None = None
 
     def from_string(self, string: str):
         data = json.loads(string)
@@ -28,15 +23,17 @@ class WorldInfo(BaseModel):
             print(f"[ERROR]: {e}")
 
     def to_json(self):
-        return {"name": self.name, "publisher": self.publisher, "bundlepath": self.bundlepath, "bundledata": self.bundledata}
+        return {"name": self.name, "publisher": self.publisher, "bundlepath": self.bundlepath, "bundledata": self.bundledata, "worldthumbnail": self.worldthumbnail}
 
     def package_data(self, worldInfo):
+        """Package World into Zip: Containing: Bundle Assets, Thumbnail, World Info Json"""
         with open(worldInfo, "r") as dataFile:
             data = json.load(dataFile)
             zip_buffer = BytesIO()
             with zipfile.ZipFile(zip_buffer, "w") as ZipFile:
                 ZipFile.write(data["bundlepath"])
                 ZipFile.write(data["bundledata"])
+                ZipFile.write(data["worldthumbnail"])
                 ZipFile.write(worldInfo)
             zip_buffer.seek(0)
             return zip_buffer
@@ -55,6 +52,7 @@ class UserDatabase:
         self.cursor: Cursor = None
         self.baseUserData = "Data/Users/"
 
+    # sqlite Functions
     def Connect(self):
         if self.connection == None and self.cursor == None:
             self.connection = sqlite3.connect(self.db_file)
@@ -66,7 +64,7 @@ class UserDatabase:
     def AddUser(self, name: str, username: str, password: str, email: str, options: dict = {}, rank: str = "Vistor"):
         userdata_path = os.path.join(self.baseUserData, username + ".json")
         with open(userdata_path, "w") as file:
-            temp_data = {"DisplayName": name, "Assets": {"pfp": "Data/Media/ProfileIcons/Default.png"}, "Options": options}
+            temp_data = {"DisplayName": name, "Assets": {"pfp": "Data/Media/ProfileIcons/Default.png", "Stickers": []}, "Options": options}
             temp_data["Options"]["Rank"] = rank
             json.dump(temp_data, file, indent=4)
         try:
@@ -87,9 +85,25 @@ class UserDatabase:
         self.cursor.execute("DELETE FROM users WHERE username = ?", (username,))
         userdata_path = os.path.join(self.baseUserData, username + ".json")
         userdata_profile = os.path.join("Data/Media/ProfileIcons", username + ".png")
+        userdata_stickers = os.path.join(f"Data/Users/{username}/Stickers")
         os.remove(userdata_path)
         os.remove(userdata_profile)
+        os.remove(userdata_stickers)
         self.connection.commit()
+
+    # Asset and Data Management
+    def GetUserJSON(self, username: str):
+        """Get user data from the json."""
+        self.cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+        user = self.cursor.fetchone()
+        with open(user[5], "r") as file:
+            return json.load(file)
+        
+    def SaveUserJSON(self, data, username: str):
+        self.cursor.execute("SELECT * FROM users WHERE username=?", (username,))
+        user = self.cursor.fetchone()
+        with open(user[5], "w") as file:
+            json.dump(data, file, indent=4)
 
     def PackageAssets(self, username):
         self.cursor.execute("SELECT * FROM users WHERE username=?", (username,))
