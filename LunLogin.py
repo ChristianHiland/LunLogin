@@ -1,5 +1,5 @@
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
-from database import UserDatabase, User, WorldInfo
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
+from database import UserDatabase, User, WorldInfo, LoginFormat
 from fastapi.responses import StreamingResponse
 from pathlib import Path
 import shutil
@@ -15,20 +15,38 @@ userDB.Connect()
 async def root():
     return {"status": "online"}
 
+@app.post('/user/test/')
+async def UserLogin(request: Request): 
+    # Read the raw body as text
+    raw_body = await request.body()
+
+    # Decode the bytes to a string
+    body_string = raw_body.decode('utf-8')
+
+    print("--- SERVER RECEIVED RAW BODY ---")
+    print(f"Content-Type: {request.headers.get('content-type')}")
+    print(f"Raw String: {body_string}")
+    print("--------------------------------")
+
+    # If the request makes it here, you should see the JSON string printed.
+    return {"message": "Raw body received successfully."}
+
 #
 # Login Mangment
 #
 
-@app.get('/user/login/')
-async def UserLogin(username: str, password: str):
-    user = userDB.GetUser(username)
-    if user[0].password == password:
-        return user
+@app.post('/user/login/')
+async def UserLogin(data: LoginFormat):
+    print(data)
+    user = userDB.GetUser(data.username)
+    if user[0].password == data.password:
+        return user[0]
 
 @app.post('/user/signup/')
-async def UserSignup(userInfo: User):
+async def UserSignup(userInfo: str = Form(...)):
     """Create a new user and add it to the database"""
-    userDB.AddUser(userInfo.name, userInfo.username, userInfo.password, userInfo.email)
+    user = User().from_string(userInfo)
+    userDB.AddUser(user.name, user.username, user.password, user.email)
 
 @app.post('/user/delete/')
 async def UserRemove(username: str):
@@ -91,13 +109,15 @@ async def UploadWorldAsset(worldInfo_str: str = Form(...), file: UploadFile = Fi
             worldInfo.bundlepath = savePath.__str__() + f"\\{file.filename}"
             worldInfo.bundledata = savePath.__str__() + f"\\{file.filename.replace(".socialworld", ".socialdata")}"
             json.dump(worldInfo.to_json(), infoFile, indent=4)
+        worldInfo.updateGlobalInfo()
     finally:
         await file.close()
 
 @app.get('/game/assets/getWorld')
 async def GetWorldAsset(worldName: str, publisher: str):
     """Get World Asset in zip file format, using world Name, and Publisher."""
-    worldFolder = Path(f"Data/Game/Worlds/{publisher}/{worldName}/world.info")
+    print(f"name: {worldName}, publisher: {publisher}")
+    worldFolder = Path(f"Data/Game/Worlds/{worldName}/{publisher}/world.info")
     zip = WorldInfo().package_data(worldFolder)
     headers = {'Content-Disposition': f'attachment; filename="{worldName}.zip"'}
     return StreamingResponse(zip, media_type="application/zip", headers=headers)
@@ -105,15 +125,18 @@ async def GetWorldAsset(worldName: str, publisher: str):
 @app.get('/game/assets/getWorldList')
 async def GetWorldList():
     """Get a list of world along with their publishers."""
-    content = {}
-    for item in Path("Data/Game/Worlds").iterdir():
-        if item.is_dir():
-            publisher_folder_name = item.name
-            contents = []
-            for world in item.iterdir():
-                if world.is_dir():
-                    contents.append(world.name)
-            content[publisher_folder_name] = contents
+    with open("globalWorld.info", "r") as file:
+        return json.load(file)
+    
+    #content = {"worlds": []}
+    #for item in Path("Data/Game/Worlds").iterdir():
+    #    if item.is_dir():
+    #        publisher_folder_name = item.name
+    #        contents = []
+    #        for world in item.iterdir():
+    #            if world.is_dir():
+    #                contents.append(world.name)
+    #        content["worlds"].append({"publisher": publisher_folder_name, "world_names": contents})
 
     return content
             

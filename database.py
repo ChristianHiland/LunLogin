@@ -1,5 +1,6 @@
 from sqlite3 import Connection, Cursor
 from pydantic import BaseModel
+from pathlib import Path
 from io import BytesIO
 from typing import Any
 from enum import Enum
@@ -11,6 +12,7 @@ import os
 class WorldInfo(BaseModel):
     name: str | None = None
     publisher: str | None = None
+    scene: str | None = None
     bundlepath: str | None = None
     bundledata: str | None = None
     worldthumbnail: str | None = None
@@ -21,29 +23,55 @@ class WorldInfo(BaseModel):
             return WorldInfo(**data)
         except Exception as e:
             print(f"[ERROR]: {e}")
+            
+    def updateGlobalInfo(self):
+        oldData = self.read("globalWorld.info")
+        temp = {"name": self.name, "publisher": self.publisher}
+        if temp not in oldData["Worlds"]:
+            oldData["Worlds"].append(temp)
+            
+            with open("globalWorld.info", "w") as file:
+                json.dump(oldData, file, indent=4)
+        
+    def read(self, file: str):
+        with open(file, "r") as file:
+            return json.load(file)
 
     def to_json(self):
-        return {"name": self.name, "publisher": self.publisher, "bundlepath": self.bundlepath, "bundledata": self.bundledata, "worldthumbnail": self.worldthumbnail}
+        return {"name": self.name, "publisher": self.publisher, "scene": self.scene, "bundlepath": self.bundlepath, "bundledata": self.bundledata, "worldthumbnail": self.worldthumbnail}
 
     def package_data(self, worldInfo):
         """Package World into Zip: Containing: Bundle Assets, Thumbnail, World Info Json"""
         with open(worldInfo, "r") as dataFile:
             data = json.load(dataFile)
             zip_buffer = BytesIO()
+            bundlescene = Path(data["bundlepath"])
+            worldinfo = Path(worldInfo)
             with zipfile.ZipFile(zip_buffer, "w") as ZipFile:
-                ZipFile.write(data["bundlepath"])
-                ZipFile.write(data["bundledata"])
-                ZipFile.write(data["worldthumbnail"])
-                ZipFile.write(worldInfo)
+                ZipFile.write(bundlescene, "world.socialWorld")
+                #ZipFile.write(data["bundledata"])
+                #ZipFile.write(data["worldthumbnail"])
+                ZipFile.write(worldinfo, worldinfo.name)
             zip_buffer.seek(0)
             return zip_buffer
 
 class User(BaseModel):
-    name: str
-    username: str
-    password: str
+    name: str | None = None
+    username: str | None = None
+    password: str | None = None
     email: str | None = None
     userdata: str | None = None
+    
+    def from_string(self, string):
+        data = json.loads(string)
+        try:
+            return User(**data)
+        except Exception as e:
+            print(f"[ERROR]: {e}")
+            
+class LoginFormat(BaseModel):
+    username: str
+    password: str
 
 class UserDatabase:
     def __init__(self, db_file: str):
