@@ -1,0 +1,8 @@
+{
+    "name": "demo",
+    "publisher": "LeeLunbin",
+    "scene": null,
+    "bundlepath": "Data\\Game\\Worlds\\LeeLunbin\\demo\\demo.socialworld",
+    "bundledata": "Data\\Game\\Worlds\\LeeLunbin\\demo\\demo.socialdata",
+    "worldthumbnail": "Data\\Game\\Worlds\\DefaultWorld.png"
+}

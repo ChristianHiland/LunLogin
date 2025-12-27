@@ -3,7 +3,6 @@ from pydantic import BaseModel
 from pathlib import Path
 from io import BytesIO
 from typing import Any
-from enum import Enum
 import sqlite3
 import zipfile
 import json
@@ -32,6 +31,12 @@ class WorldInfo(BaseModel):
             
             with open("globalWorld.info", "w") as file:
                 json.dump(oldData, file, indent=4)
+
+    def updateThumbnail(self, worldInfo, thumbnailPath: Path):
+        oldData = self.read(worldInfo)
+        oldData["worldthumbnail"] = thumbnailPath.__str__()
+        with open(worldInfo, "w") as file:
+            json.dump(oldData, file, indent=4)
         
     def read(self, file: str):
         with open(file, "r") as file:
@@ -52,8 +57,20 @@ class WorldInfo(BaseModel):
                 #ZipFile.write(data["bundledata"])
                 #ZipFile.write(data["worldthumbnail"])
                 ZipFile.write(worldinfo, worldinfo.name)
+            zip_buffer.seek(0, 2)
+            file_size = zip_buffer.tell()
             zip_buffer.seek(0)
-            return zip_buffer
+            return zip_buffer, file_size
+    
+    def get_thumbnail(self, worldInfo):
+        buffer = BytesIO()
+        with open(worldInfo, "r") as infoFile:
+            data = json.load(infoFile)
+            thumbnailPath = Path(data["worldthumbnail"])
+            with open(thumbnailPath, "rb") as file:
+                buffer = BytesIO(file.read())
+                file_size = os.path.getsize(thumbnailPath)
+                return buffer, file_size
 
 class User(BaseModel):
     name: str | None = None
@@ -72,6 +89,7 @@ class User(BaseModel):
 class LoginFormat(BaseModel):
     username: str
     password: str
+
 
 class UserDatabase:
     def __init__(self, db_file: str):

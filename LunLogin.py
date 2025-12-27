@@ -1,14 +1,22 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Request
 from database import UserDatabase, User, WorldInfo, LoginFormat
 from fastapi.responses import StreamingResponse
+from Online import OnlineMangment
 from pathlib import Path
 import shutil
 import json
 import os
 
+# FastAPI
+print("Starting FastAPI")
 app = FastAPI()
+# Database
+print("Starting sqlite3 database")
 userDB = UserDatabase("Data/users.db")
 userDB.Connect()
+# Online Managment
+print("Starting Online Managment")
+onlineManager = OnlineMangment("currentOnlineInst.info")
 
 
 @app.get('/')
@@ -118,25 +126,30 @@ async def GetWorldAsset(worldName: str, publisher: str):
     """Get World Asset in zip file format, using world Name, and Publisher."""
     print(f"name: {worldName}, publisher: {publisher}")
     worldFolder = Path(f"Data/Game/Worlds/{worldName}/{publisher}/world.info")
-    zip = WorldInfo().package_data(worldFolder)
-    headers = {'Content-Disposition': f'attachment; filename="{worldName}.zip"'}
+    zip, file_size = WorldInfo().package_data(worldFolder)
+    headers = {'Content-Disposition': f'attachment; filename="{worldName}.zip"', 'Content-Length': str(file_size)}
     return StreamingResponse(zip, media_type="application/zip", headers=headers)
+
+@app.get('/game/assets/getWorldThumbnail')
+async def GetWorldThumbnail(worldName: str, publisher: str):
+    """Get a world's thumbnail and upload it."""
+    worldInfo = Path(f"Data/Game/Worlds/{publisher}/{worldName}/world.info")
+    img, file_size = WorldInfo().get_thumbnail(worldInfo)
+    headers = {'Content-Disposition': f'attachment; filename="{worldName}_{publisher}.png"', 'Content-Length': str(file_size)}
+    return StreamingResponse(img, media_type="application/image", headers=headers)
+
+@app.post('/game/assets/uploadWorldThumbnail')
+async def UploadWorldThumbnail(worldName: str = Form(...), publisher: str = Form(...), file: UploadFile = File(...)):
+    """Get a world's thumbnail and upload it."""
+    worldInfo = Path(f"Data/Game/Worlds/{publisher}/{worldName}/world.info")
+    worldPath = Path(f"Data/Game/Worlds/{publisher}/{worldName}/")
+    with open(worldPath / f"image.png", "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+    WorldInfo().updateThumbnail(worldInfo, worldPath / "image.png")
 
 @app.get('/game/assets/getWorldList')
 async def GetWorldList():
     """Get a list of world along with their publishers."""
     with open("globalWorld.info", "r") as file:
         return json.load(file)
-    
-    #content = {"worlds": []}
-    #for item in Path("Data/Game/Worlds").iterdir():
-    #    if item.is_dir():
-    #        publisher_folder_name = item.name
-    #        contents = []
-    #        for world in item.iterdir():
-    #            if world.is_dir():
-    #                contents.append(world.name)
-    #        content["worlds"].append({"publisher": publisher_folder_name, "world_names": contents})
-
-    return content
             

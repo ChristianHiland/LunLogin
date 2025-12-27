@@ -1,5 +1,20 @@
 {
     "Worlds": [
-        
+        {
+            "name": "test",
+            "publisher": "test"
+        },
+        {
+            "name": "DefaultHome",
+            "publisher": "SocialSDK"
+        },
+        {
+            "name": "HouseOnNight",
+            "publisher": "LeeLunbin"
+        },
+        {
+            "name": "demo",
+            "publisher": "LeeLunbin"
+        }
     ]
 }
