@@ -155,3 +155,7 @@ async def GetWorldList():
     with open("globalWorld.info", "r") as file:
         return json.load(file)
             
+@app.get('/game/assets/getWorldSize')
+async def GetWorldSize(worldName: str = Form(...), publisher: str = Form(...)):
+    worldFile = Path(f"Data/Game/Worlds/{publisher}/{worldName}/{worldName}")
+    return os.path.getsize(worldFile)
