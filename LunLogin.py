@@ -108,6 +108,8 @@ async def UploadUserSticker(username: str, file: UploadFile = File(...)):
 async def UploadWorldAsset(worldInfo_str: str = Form(...), file: UploadFile = File(...)):
     """Upload World Asset, along with world info as string. {"name": val, "publisher": val}"""
     worldInfo = WorldInfo().from_string(worldInfo_str)
+    if worldInfo.worldthumbnail == None:
+        worldInfo.worldthumbnail = "Data\\Game\\Worlds\\DefaultWorld.png"
     savePath = Path("Data/Game/Worlds/") / worldInfo.publisher / worldInfo.name
     savePath.mkdir(parents=True, exist_ok=True)
     try:

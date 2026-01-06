@@ -1,10 +1,6 @@
 {
     "Worlds": [
         {
-            "name": "test",
-            "publisher": "test"
-        },
-        {
             "name": "DefaultHome",
             "publisher": "SocialSDK"
         },
@@ -13,8 +9,8 @@
             "publisher": "LeeLunbin"
         },
         {
-            "name": "demo",
-            "publisher": "LeeLunbin"
+            "name": "errorworld",
+            "publisher": "SocialSDK"
         }
     ]
 }
