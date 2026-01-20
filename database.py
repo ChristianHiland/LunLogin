@@ -78,6 +78,8 @@ class User(BaseModel):
     password: str | None = None
     email: str | None = None
     userdata: str | None = None
+    defaultWorld: str | None = None
+    avatar: str | None = "defaultAvatar"
     
     def from_string(self, string):
         data = json.loads(string)

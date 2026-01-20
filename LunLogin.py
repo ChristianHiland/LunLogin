@@ -44,17 +44,18 @@ async def UserLogin(request: Request):
 #
 
 @app.post('/user/login/')
-async def UserLogin(data: LoginFormat):
-    print(data)
-    user = userDB.GetUser(data.username)
-    if user[0].password == data.password:
+async def UserLogin(username: str = Form(...), password: str = Form(...)):
+    user = userDB.GetUser(username)
+    if user[0].password == password:
         return user[0]
 
 @app.post('/user/signup/')
-async def UserSignup(userInfo: str = Form(...)):
+async def UserSignup(name: str = Form(...), username: str = Form(...), password: str = Form(...)):
     """Create a new user and add it to the database"""
-    user = User().from_string(userInfo)
+    user = User(name = name, username = username, password = password)
     userDB.AddUser(user.name, user.username, user.password, user.email)
+    user = userDB.GetUser(username)
+    return user[0]
 
 @app.post('/user/delete/')
 async def UserRemove(username: str):
@@ -155,7 +156,7 @@ async def GetWorldList():
     with open("globalWorld.info", "r") as file:
         return json.load(file)
             
-@app.get('/game/assets/getWorldSize')
+@app.post('/game/assets/getWorldSize')
 async def GetWorldSize(worldName: str = Form(...), publisher: str = Form(...)):
     worldFile = Path(f"Data/Game/Worlds/{publisher}/{worldName}/{worldName}")
     return os.path.getsize(worldFile)
