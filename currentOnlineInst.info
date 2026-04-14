@@ -1,8 +1,5 @@
 {
     "OnlineInstances": [
-        {
-            "World": {"worldName": "MultiplayerTester", "publisher": "SocialSDK"}, 
-            "Lobbies": [{"Instance": "Testing Multiplayer", "Author": "LeeLunbin", "joinCode": "XYZ"}]
-        }
+        
     ]
 }

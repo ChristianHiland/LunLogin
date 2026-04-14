@@ -2,7 +2,7 @@
     "name": "HouseOnNight",
     "publisher": "LeeLunbin",
     "scene": null,
-    "bundlepath": "Data\\Game\\Worlds\\LeeLunbin\\HouseOnNight\\HouseOnNight",
-    "bundledata": "Data\\Game\\Worlds\\LeeLunbin\\HouseOnNight\\HouseOnNight",
-    "worldthumbnail": "Data\\Game\\Worlds\\LeeLunbin\\HouseOnNight\\image.png"
+    "bundlepath": "Data/Game/Worlds/LeeLunbin/HouseOnNight/HouseOnNight",
+    "bundledata": "Data/Game/Worlds/LeeLunbin/HouseOnNight/HouseOnNight",
+    "worldthumbnail": "Data/Game/Worlds/LeeLunbin/HouseOnNight/image.png"
 }

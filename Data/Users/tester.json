@@ -1,0 +1,10 @@
+{
+    "DisplayName": "Tester",
+    "Assets": {
+        "pfp": "Data/Media/ProfileIcons/Default.png",
+        "Stickers": []
+    },
+    "Options": {
+        "Rank": "Vistor"
+    }
+}

@@ -2,7 +2,7 @@
     "name": "DefaultHome",
     "publisher": "SocialSDK",
     "scene": null,
-    "bundlepath": "Data\\Game\\Worlds\\SocialSDK\\DefaultHome\\DefaultHome",
-    "bundledata": "Data\\Game\\Worlds\\SocialSDK\\DefaultHome\\DefaultHome",
-    "worldthumbnail": "Data\\Game\\Worlds\\DefaultWorld.png"
+    "bundlepath": "Data/Game/Worlds/SocialSDK/DefaultHome/DefaultHome",
+    "bundledata": "Data/Game/Worlds/SocialSDK/DefaultHome/DefaultHome",
+    "worldthumbnail": "Data/Game/Worlds/DefaultWorld.png"
 }

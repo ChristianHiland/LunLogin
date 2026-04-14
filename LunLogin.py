@@ -23,22 +23,6 @@ onlineManager = OnlineMangment("currentOnlineInst.info")
 async def root():
     return {"status": "online"}
 
-@app.post('/user/test/')
-async def UserLogin(request: Request): 
-    # Read the raw body as text
-    raw_body = await request.body()
-
-    # Decode the bytes to a string
-    body_string = raw_body.decode('utf-8')
-
-    print("--- SERVER RECEIVED RAW BODY ---")
-    print(f"Content-Type: {request.headers.get('content-type')}")
-    print(f"Raw String: {body_string}")
-    print("--------------------------------")
-
-    # If the request makes it here, you should see the JSON string printed.
-    return {"message": "Raw body received successfully."}
-
 #
 # Login Mangment
 #
@@ -47,7 +31,7 @@ async def UserLogin(request: Request):
 async def UserLogin(username: str = Form(...), password: str = Form(...)):
     user = userDB.GetUser(username)
     if user[0].password == password:
-        return user[0]
+        return user[1]
 
 @app.post('/user/signup/')
 async def UserSignup(name: str = Form(...), username: str = Form(...), password: str = Form(...)):
@@ -110,15 +94,15 @@ async def UploadWorldAsset(worldInfo_str: str = Form(...), file: UploadFile = Fi
     """Upload World Asset, along with world info as string. {"name": val, "publisher": val}"""
     worldInfo = WorldInfo().from_string(worldInfo_str)
     if worldInfo.worldthumbnail == None:
-        worldInfo.worldthumbnail = "Data\\Game\\Worlds\\DefaultWorld.png"
+        worldInfo.worldthumbnail = "Data/Game/Worlds/DefaultWorld.png"
     savePath = Path("Data/Game/Worlds/") / worldInfo.publisher / worldInfo.name
     savePath.mkdir(parents=True, exist_ok=True)
     try:
         with open(savePath / file.filename, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
         with open(savePath / "world.info", "w") as infoFile:
-            worldInfo.bundlepath = savePath.__str__() + f"\\{file.filename}"
-            worldInfo.bundledata = savePath.__str__() + f"\\{file.filename.replace(".socialworld", ".socialdata")}"
+            worldInfo.bundlepath = savePath.__str__() + f"/{file.filename}"
+            worldInfo.bundledata = savePath.__str__() + f"/{file.filename.replace(".socialworld", ".socialdata")}"
             json.dump(worldInfo.to_json(), infoFile, indent=4)
         worldInfo.updateGlobalInfo()
     finally:
@@ -160,3 +144,22 @@ async def GetWorldList():
 async def GetWorldSize(worldName: str = Form(...), publisher: str = Form(...)):
     worldFile = Path(f"Data/Game/Worlds/{publisher}/{worldName}/{worldName}")
     return os.path.getsize(worldFile)
+
+#
+# Online Managment
+#
+
+@app.post('/game/online/createInstance')
+async def CreateInstance(worldName: str = Form(...), publisher: str = Form(...), owner: str = Form(...), instanceName: str = Form(...), instanceID: str = Form(...)):
+    onlineManager.AddInstance(worldName, publisher, owner, instanceName, instanceID)
+
+@app.post('/game/online/removeInstance')
+async def RemoveInstance(worldName: str = Form(...), publisher: str = Form(...), instanceID: str = Form(...)):
+    onlineManager.RemoveRoom(worldName, publisher, instanceID)
+
+@app.post('/game/online/getInstances')
+async def GetInstances(worldName: str = Form(...), publisher: str = Form(...)):
+    # Returns [{"InstanceName": instanceName, "Owner": owner, "InstanceID": instanceId}]
+    tempRooms = {"Rooms": onlineManager.GetInstances(worldName, publisher)}
+    return tempRooms
+

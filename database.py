@@ -80,6 +80,7 @@ class User(BaseModel):
     userdata: str | None = None
     defaultWorld: str | None = None
     avatar: str | None = "defaultAvatar"
+    rank: str | None = "guest"
     
     def from_string(self, string):
         data = json.loads(string)

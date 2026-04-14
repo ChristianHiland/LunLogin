@@ -11,6 +11,14 @@
         {
             "name": "errorworld",
             "publisher": "SocialSDK"
+        },
+        {
+            "name": "Forest",
+            "publisher": "LeeLunbin"
+        },
+        {
+            "name": "Beach",
+            "publisher": "LeeLunbin"
         }
     ]
 }

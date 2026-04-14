@@ -2,7 +2,7 @@
     "name": "ErrorWorld",
     "publisher": "SocialSDK",
     "scene": null,
-    "bundlepath": "Data\\Game\\Worlds\\SocialSDK\\ErrorWorld\\errorworld",
-    "bundledata": "Data\\Game\\Worlds\\SocialSDK\\ErrorWorld\\errorworld",
-    "worldthumbnail": "Data\\Game\\Worlds\\DefaultWorld.png"
+    "bundlepath": "Data/Game/Worlds/SocialSDK/ErrorWorld/errorworld",
+    "bundledata": "Data/Game/Worlds/SocialSDK/ErrorWorld/errorworld",
+    "worldthumbnail": "Data/Game/Worlds/DefaultWorld.png"
 }
