@@ -21,7 +21,7 @@ onlineManager = OnlineMangment("currentOnlineInst.info")
 
 @app.get('/')
 async def root():
-    return {"status": "online"}
+    return "online"
 
 #
 # Login Mangment
