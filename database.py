@@ -45,7 +45,7 @@ class WorldInfo(BaseModel):
     def to_json(self):
         return {"name": self.name, "publisher": self.publisher, "scene": self.scene, "bundlepath": self.bundlepath, "bundledata": self.bundledata, "worldthumbnail": self.worldthumbnail}
 
-    def package_data(self, worldInfo):
+    def package_data(self, worldInfo, platform: str):
         """Package World into Zip: Containing: Bundle Assets, Thumbnail, World Info Json"""
         with open(worldInfo, "r") as dataFile:
             data = json.load(dataFile)
@@ -71,6 +71,8 @@ class WorldInfo(BaseModel):
                 buffer = BytesIO(file.read())
                 file_size = os.path.getsize(thumbnailPath)
                 return buffer, file_size
+
+    
 
 class User(BaseModel):
     name: str | None = None

@@ -1,28 +1,5 @@
 {
     "Worlds": [
-        {
-            "name": "DefaultHome",
-            "publisher": "SocialSDK"
-        },
-        {
-            "name": "HouseOnNight",
-            "publisher": "LeeLunbin"
-        },
-        {
-            "name": "errorworld",
-            "publisher": "SocialSDK"
-        },
-        {
-            "name": "Forest",
-            "publisher": "LeeLunbin"
-        },
-        {
-            "name": "Beach",
-            "publisher": "LeeLunbin"
-        },
-        {
-            "name": "Lovely View",
-            "publisher": "LeeLunbin"
-        }
+        
     ]
 }

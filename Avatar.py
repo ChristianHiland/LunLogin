@@ -5,10 +5,11 @@ import zipfile
 import json
 import os
 
-class Avatar(BaseModel):
+class AvatarStruct(BaseModel):
     name: str | None = None
     publisher: str | None = None
     avatarpath: str | None = None
+    platform: str | None = "StandaloneWindows64"
     avatarthumbnail: str | None = "Data/Media/AvatarIcons/Default.png"
 
     def to_json(self):
