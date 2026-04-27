@@ -152,7 +152,7 @@ async def GetWorldSize(worldName: str = Form(...), publisher: str = Form(...)):
 @app.post('/game/online/createInstance')
 async def CreateInstance(worldName: str = Form(...), publisher: str = Form(...), owner: str = Form(...), instanceName: str = Form(...), instanceID: str = Form(...)):
     # Check if the instance already exists:
-    if onlineManager.CheckInstance(worldName, publisher, instanceID != True:
+    if onlineManager.CheckInstance(worldName, publisher, instanceID) != True:
         onlineManager.AddInstance(worldName, publisher, owner, instanceName, instanceID)
 
 @app.post('/game/online/removeInstance')
