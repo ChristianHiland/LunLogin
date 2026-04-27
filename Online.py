@@ -62,13 +62,14 @@ class OnlineMangment:
         return []
 
     def CheckInstance(self, worldName: str, publisher: str, instanceID: str):
+        doesExist = False
         for instance in self.currentOnlineInst["OnlineInstances"]:
             world_data = instance.get("World", {})
             if world_data.get("worldName") == worldName and world_data.get("publisher") == publisher and world_data.get("InstanceID") == instanceID:
-                return True
-            else:
-                return False
-                
+                doesExist = True
+
+        return doesExist
+        
     def Save(self):
         with open(self.currentOnlineInstFile, "w") as file:
             json.dump(self.currentOnlineInst, file, indent=4)
