@@ -151,7 +151,9 @@ async def GetWorldSize(worldName: str = Form(...), publisher: str = Form(...)):
 
 @app.post('/game/online/createInstance')
 async def CreateInstance(worldName: str = Form(...), publisher: str = Form(...), owner: str = Form(...), instanceName: str = Form(...), instanceID: str = Form(...)):
-    onlineManager.AddInstance(worldName, publisher, owner, instanceName, instanceID)
+    # Check if the instance already exists:
+    if (onlineManager.CheckInstance(worldName, publisher, instanceID != True):
+        onlineManager.AddInstance(worldName, publisher, owner, instanceName, instanceID)
 
 @app.post('/game/online/removeInstance')
 async def RemoveInstance(worldName: str = Form(...), publisher: str = Form(...), instanceID: str = Form(...)):
@@ -162,4 +164,3 @@ async def GetInstances(worldName: str = Form(...), publisher: str = Form(...)):
     # Returns [{"InstanceName": instanceName, "Owner": owner, "InstanceID": instanceId}]
     tempRooms = {"Rooms": onlineManager.GetInstances(worldName, publisher)}
     return tempRooms
-
