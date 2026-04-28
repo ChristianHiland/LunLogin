@@ -54,7 +54,7 @@ class WorldInfo(BaseModel):
             bundlescene = Path(data["basePath"]) / platform
             worldinfo = Path(worldInfo)
             with zipfile.ZipFile(zip_buffer, "w") as ZipFile:
-                ZipFile.write(bundlescene, "world.socialWorld"))
+                ZipFile.write(bundlescene, "world.socialWorld")
                 ZipFile.write(worldinfo, worldinfo.name)
             zip_buffer.seek(0, 2)
             file_size = zip_buffer.tell()
