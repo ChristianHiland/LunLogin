@@ -11,9 +11,10 @@ import os
 class WorldInfo(BaseModel):
     name: str | None = None
     publisher: str | None = None
+    platform: str | None = None
     scene: str | None = None
-    bundlepath: str | None = None
-    bundledata: str | None = None
+    basePath: str | None = None
+    fileName: str | None = None
     worldthumbnail: str | None = None
 
     def from_string(self, string: str):
@@ -43,19 +44,17 @@ class WorldInfo(BaseModel):
             return json.load(file)
 
     def to_json(self):
-        return {"name": self.name, "publisher": self.publisher, "scene": self.scene, "bundlepath": self.bundlepath, "bundledata": self.bundledata, "worldthumbnail": self.worldthumbnail}
+        return {"name": self.name, "publisher": self.publisher, "scene": self.scene, "basePath": self.basePath, "fileName": self.fileName, "worldthumbnail": self.worldthumbnail}
 
     def package_data(self, worldInfo, platform: str):
         """Package World into Zip: Containing: Bundle Assets, Thumbnail, World Info Json"""
         with open(worldInfo, "r") as dataFile:
             data = json.load(dataFile)
             zip_buffer = BytesIO()
-            bundlescene = Path(data["bundlepath"])
+            bundlescene = Path(data["basePath"]) / platform
             worldinfo = Path(worldInfo)
             with zipfile.ZipFile(zip_buffer, "w") as ZipFile:
-                ZipFile.write(bundlescene, "world.socialWorld")
-                #ZipFile.write(data["bundledata"])
-                #ZipFile.write(data["worldthumbnail"])
+                ZipFile.write(bundlescene, "world.socialWorld"))
                 ZipFile.write(worldinfo, worldinfo.name)
             zip_buffer.seek(0, 2)
             file_size = zip_buffer.tell()

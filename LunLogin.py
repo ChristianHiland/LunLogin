@@ -3,6 +3,7 @@ from database import UserDatabase, User, WorldInfo, LoginFormat
 from fastapi.responses import StreamingResponse
 from Online import OnlineMangment
 from pathlib import Path
+from io import BytesIO
 import shutil
 import json
 import os
@@ -91,29 +92,38 @@ async def UploadUserSticker(username: str, file: UploadFile = File(...)):
 
 @app.post('/game/assets/uploadWorld')
 async def UploadWorldAsset(worldInfo_str: str = Form(...), file: UploadFile = File(...)):
-    """Upload World Asset, along with world info as string. {"name": val, "publisher": val}"""
+    """Upload World Asset, along with world info as string. {"name": val, "publisher": val, "platform": val}"""
     worldInfo = WorldInfo().from_string(worldInfo_str)
+    
+    # Set thumbnail to default if not made.
     if worldInfo.worldthumbnail == None:
         worldInfo.worldthumbnail = "Data/Game/Worlds/DefaultWorld.png"
-    savePath = Path("Data/Game/Worlds/") / worldInfo.publisher / worldInfo.name
+
+    savePath = Path("Data/Game/Worlds/") / worldInfo.publisher / worldInfo.name / worldInfo.platform
+    basePath = Path("Data/Game/Worlds/") / worldInfo.publisher / worldInfo.name
+
     savePath.mkdir(parents=True, exist_ok=True)
     try:
         with open(savePath / file.filename, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
-        with open(savePath / "world.info", "w") as infoFile:
-            worldInfo.bundlepath = savePath.__str__() + f"/{file.filename}"
-            worldInfo.bundledata = savePath.__str__() + f"/{file.filename.replace(".socialworld", ".socialdata")}"
+        with open(basePath / "world.info", "w") as infoFile:
+            worldInfo.basePath = basePath.__str__()
+            worldInfo.fileName = file.filename
             json.dump(worldInfo.to_json(), infoFile, indent=4)
         worldInfo.updateGlobalInfo()
     finally:
         await file.close()
 
 @app.get('/game/assets/getWorld')
-async def GetWorldAsset(worldName: str, publisher: str):
+async def GetWorldAsset(worldName: str, publisher: str, platform: str):
     """Get World Asset in zip file format, using world Name, and Publisher."""
-    print(f"name: {worldName}, publisher: {publisher}")
+    print(f"name: {worldName}, publisher: {publisher}, platform: {platform}")
+
+    # Path to world info
     worldFolder = Path(f"Data/Game/Worlds/{worldName}/{publisher}/world.info")
-    zip, file_size = WorldInfo().package_data(worldFolder)
+    # Using world info to package data
+    zip, file_size = WorldInfo().package_data(worldFolder, platform)
+    # Send
     headers = {'Content-Disposition': f'attachment; filename="{worldName}.zip"', 'Content-Length': str(file_size)}
     return StreamingResponse(zip, media_type="application/zip", headers=headers)
 
@@ -129,10 +139,10 @@ async def GetWorldThumbnail(worldName: str, publisher: str):
 async def UploadWorldThumbnail(worldName: str = Form(...), publisher: str = Form(...), file: UploadFile = File(...)):
     """Get a world's thumbnail and upload it."""
     worldInfo = Path(f"Data/Game/Worlds/{publisher}/{worldName}/world.info")
-    worldPath = Path(f"Data/Game/Worlds/{publisher}/{worldName}/")
-    with open(worldPath / f"image.png", "wb") as buffer:
+    worldImagePath = Path(f"Data/Game/Worlds/{publisher}/{worldName}/image.png")
+    with open(worldImagePath, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    WorldInfo().updateThumbnail(worldInfo, worldPath / "image.png")
+    WorldInfo().updateThumbnail(worldInfo, worldImagePath)
 
 @app.get('/game/assets/getWorldList')
 async def GetWorldList():
@@ -141,8 +151,8 @@ async def GetWorldList():
         return json.load(file)
             
 @app.post('/game/assets/getWorldSize')
-async def GetWorldSize(worldName: str = Form(...), publisher: str = Form(...)):
-    worldFile = Path(f"Data/Game/Worlds/{publisher}/{worldName}/{worldName}")
+async def GetWorldSize(worldName: str = Form(...), publisher: str = Form(...), platform: str = Form(...)):
+    worldFile = Path(f"Data/Game/Worlds/{publisher}/{worldName}/{platform}/{worldName}")
     return os.path.getsize(worldFile)
 
 #
@@ -164,3 +174,29 @@ async def GetInstances(worldName: str = Form(...), publisher: str = Form(...)):
     # Returns [{"InstanceName": instanceName, "Owner": owner, "InstanceID": instanceId}]
     tempRooms = {"Rooms": onlineManager.GetInstances(worldName, publisher)}
     return tempRooms
+
+#
+# Avatar Management
+#
+
+@app.post('/game/assets/uploadAvatar')
+async def UploadAvatar(avatarName: str = Form(...), publisher: str = Form(...), platform: str = Form(...), file: UploadFile = File(...)):
+    file_path = f"Data/Game/Avatars/{publisher}/{avatarName}/{platform}/avatar.socialAvatar"
+    os.makedirs(os.path.dirname(file_path), exist_ok=True)
+
+    with open(file_path, "wb") as buffer:
+        buffer.write(await file.read())
+    return {"info": f"File saved for {platform}"}
+
+
+@app.post('/game/assets/getAvatar')
+async def FetchAvatar(avatarName: str = Form(...), publisher: str = Form(...), platform: str = Form(...)):
+    file_path = f"Data/Game/Avatars/{publisher}/{avatarName}/{platform}/avatar.socialAvatar"
+    buffer = BytesIO()
+    file_size = 0
+    with open(file_path, "rb") as file:
+        buffer = BytesIO(file.read())
+        file_size = os.path.getsize(file_path)
+
+    headers = {'Content-Disposition': f'attachment; filename="{publisher}_{avatarName}.socialAvatar"', 'Content-Length': str(file_size)}
+    return StreamingResponse(buffer, media_type="application/file", headers=headers)
