@@ -151,8 +151,8 @@ async def GetWorldList():
         return json.load(file)
             
 @app.post('/game/assets/getWorldSize')
-async def GetWorldSize(worldName: str = Form(...), publisher: str = Form(...), platform: str = Form(...)):
-    worldFile = Path(f"Data/Game/Worlds/{publisher}/{worldName}/{platform}/{worldName}")
+async def GetWorldSize(worldName: str = Form(...), publisher: str = Form(...)):
+    worldFile = Path(f"Data/Game/Worlds/{publisher}/{worldName}/Windows/{worldName}")
     return os.path.getsize(worldFile)
 
 #
