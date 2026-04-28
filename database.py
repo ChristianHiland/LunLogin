@@ -51,7 +51,7 @@ class WorldInfo(BaseModel):
         with open(worldInfo, "r") as dataFile:
             data = json.load(dataFile)
             zip_buffer = BytesIO()
-            bundlescene = Path(data["basePath"]) / platform
+            bundlescene = Path(data["basePath"]) / platform / data["fileName"]
             worldinfo = Path(worldInfo)
             with zipfile.ZipFile(zip_buffer, "w") as ZipFile:
                 ZipFile.write(bundlescene, "world.socialWorld")
