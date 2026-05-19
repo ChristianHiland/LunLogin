@@ -120,7 +120,7 @@ async def GetWorldAsset(worldName: str, publisher: str, platform: str):
     print(f"name: {worldName}, publisher: {publisher}, platform: {platform}")
 
     # Path to world info
-    worldFolder = Path(f"Data/Game/Worlds/{worldName}/{publisher}/world.info")
+    worldFolder = Path(f"Data/Game/Worlds/{publisher}/{worldName}/world.info")
     # Using world info to package data
     zip, file_size = WorldInfo().package_data(worldFolder, platform)
     # Send
